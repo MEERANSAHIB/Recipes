@@ -17,7 +17,7 @@ router=APIRouter(
 
 
 bcrypt_context=CryptContext(schemes=['bcrypt'],deprecated='auto')
-oauth2_bearer=OAuth2PasswordBearer(tokenUrl='auth/token')
+oauth2_bearer=OAuth2PasswordBearer(tokenUrl='/auth/token')
 
 SECRET_KEY="a7f3c91e82b64d0fa13e5b729c4d86ab"
 ALGORITHM="HS256"
@@ -54,7 +54,7 @@ def create_access_token(username:str,id:int,expire_delta:timedelta):
     encode.update({"exp":expires})
     return jwt.encode(encode,SECRET_KEY,algorithm=ALGORITHM)
 
-def get_current_user(token:Annotated[str,Depends(oauth2_bearer)]):
+async def get_current_user(token:Annotated[str,Depends(oauth2_bearer)]):
     try:
         payload=jwt.decode(token,SECRET_KEY,algorithms=[ALGORITHM])
         user_name=payload.get('sub')
@@ -81,6 +81,9 @@ async def get_all_users(db:db_dependency):
 async def token(form_data:Annotated[OAuth2PasswordRequestForm,Depends()],db:db_dependency):
     user_model=authenticate_user(form_data.username,form_data.password,db)
     if not user_model:
-        return "Failed Authentication"
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     token=create_access_token(user_model.user_name,user_model.id,timedelta(minutes=20))
-    return token
+    return {
+        "access_token": token,
+        "token_type": "bearer"
+    }
