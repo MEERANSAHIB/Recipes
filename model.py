@@ -1,6 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean
-from sqlalchemy.orm import foreign
-
+from sqlalchemy import Column, Integer, String, Boolean,ForeignKey
 from database import Base
 
 
@@ -23,6 +21,6 @@ class Recipe(Base):
     cook_time_minutes=Column(Integer)
     servings=Column(Integer)
     difficulty=Column(Integer)
-    owner_id=Column(Integer,foreign("users.id"))
+    owner_id=Column(Integer,ForeignKey("users.id"))
 
 
