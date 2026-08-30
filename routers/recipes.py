@@ -32,7 +32,7 @@ class recipe(BaseModel):
     difficulty:int
 
 @router.post("/create_new_recipe")
-async def new_user(user:user_dependency,db:db_dependency,new_recipe:recipe):
+async def new_recipe(user:user_dependency,db:db_dependency,new_recipe:recipe):
     if user.get('user_name') is None or user.get('id') is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     recipe_model=Recipe(**new_recipe.model_dump())
@@ -40,6 +40,9 @@ async def new_user(user:user_dependency,db:db_dependency,new_recipe:recipe):
     db.add(recipe_model)
     db.commit()
 
+@router.get("/users/recipes",status_code=status.HTTP_200_OK)
+async def users_recipe(user:user_dependency,db:db_dependency):
+    return db.query(Recipe).filter(Recipe.owner_id==user.get('id')).all()
 @router.get("/get_all_recipe")
 async def get_all_users(db:db_dependency):
     return db.query(Recipe).all()
